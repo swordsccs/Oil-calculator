@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benzin-Öl Mischverhältnis Rechner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 300px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            width: calc(100% - 22px);
+        }
+        #result, #log, #oilStatus {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        button {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Benzin-Öl Mischverhältnis Rechner</h1>
+    <label for="fuel">Liter Kraftstoff eingeben:</label>
+    <input type="number" id="fuel" step="0.01" min="0" placeholder="z.B. 5" required>
+    <br>
+    <button onclick="calculateOil()">Berechnen</button>
+    <button onclick="saveFuel()">Speichern</button>
+    <label for="oilAdd">Öl hinzufügen (ml):</label>
+    <input type="number" id="oilAdd" step="0.01" min="0" placeholder="z.B. 200" required>
+    <button onclick="addOil()">Öl hinzufügen</button>
+    <button onclick="resetData()">Reset</button>
+    <div id="result"></div>
+    <div id="oilStatus"></div>
+    <div id="log"></div>
+</div>
+
+<script>
+    let oilStock = 1000; // Start mit 1 Liter Öl
+    const fuelLog = [];
+
+    function calculateOil() {
+        const fuelInput = document.getElementById('fuel').value;
+        if (fuelInput) {
+            const fuel = parseFloat(fuelInput);
+            const oil = fuel * 20; // 1 Liter Benzin benötigt 20 ml Öl bei 1:50 Mischverhältnis
+            document.getElementById('result').innerText = `${fuel} Liter Kraftstoff benötigen ${oil.toFixed(2)} ml Öl.`;
+        } else {
+            document.getElementById('result').innerText = 'Bitte geben Sie eine gültige Menge an Kraftstoff ein.';
+        }
+    }
+
+    function saveFuel() {
+        const fuelInput = document.getElementById('fuel').value;
+        if (fuelInput) {
+            const fuel = parseFloat(fuelInput);
+            const oil = fuel * 20;
+            if (oilStock - oil >= 0) {
+                oilStock -= oil;
+                const now = new Date().toLocaleString();
+                fuelLog.push({ date: now, fuel, oil });
+                updateLog();
+                updateOilStatus();
+                if (oilStock <= 100) {
+                    alert('Achtung! Nur noch 100 ml Öl übrig. Bitte neues Öl kaufen.');
+                }
+            } else {
+                alert('Nicht genug Öl vorhanden. Bitte neues Öl kaufen.');
+            }
+        } else {
+            alert('Bitte geben Sie eine gültige Menge an Kraftstoff ein.');
+        }
+    }
+
+    function updateLog() {
+        const logDiv = document.getElementById('log');
+        logDiv.innerHTML = '<h3>Tankhistorie</h3>';
+        fuelLog.forEach(entry => {
+            logDiv.innerHTML += `<p>${entry.date} - ${entry.fuel} Liter Benzin - ${entry.oil.toFixed(2)} ml Öl</p>`;
+        });
+    }
+
+    function updateOilStatus() {
+        document.getElementById('oilStatus').innerText = `Verbleibendes Öl: ${oilStock.toFixed(2)} ml`;
+    }
+
+    function addOil() {
+        const oilInput = document.getElementById('oilAdd').value;
+        if (oilInput) {
+            const oilToAdd = parseFloat(oilInput);
+            oilStock += oilToAdd;
+            updateOilStatus();
+            document.getElementById('oilAdd').value = ''; // Eingabefeld zurücksetzen
+        } else {
+            alert('Bitte geben Sie eine gültige Menge an Öl ein.');
+        }
+    }
+
+    function resetData() {
+        if (confirm('Sind Sie sicher, dass Sie alle Daten zurücksetzen möchten?')) {
+            oilStock = 1000; // Zurücksetzen auf 1 Liter Öl
+            fuelLog.length = 0; // Leeren des Logs
+            updateLog();
+            updateOilStatus();
+            document.getElementById('result').innerText = '';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateOilStatus();
+    });
+</script>
+
+</body>
+</html>
